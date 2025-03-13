@@ -17,13 +17,18 @@ def mostra_histograma(dades: list[float], regla: str|None) -> None:
     
     plt.xlabel("Posicionament polític esquerra-dreta")
     plt.ylabel("Freqüència")
-    plt.title(f"Histograma de la uniforme després d'utilitzar {regla}.") if regla else plt.title("Histograma de la uniforme inicial.")
+    plt.title(f"Histograma de la NORMAL després d'utilitzar {regla}.") if regla else plt.title("Histograma de la NORMAL inicial.")
 
     plt.show()
 
 def main() -> None:
     '''Executa el programa PRINCIPAL.'''
-    nombres: list[float] = [normalvariate(0, sqrt(1 / 13)) for _ in range(10000)]
+    nombres: list[float] = []
+    for i in range(10000):
+        num = normalvariate(0, sqrt(1 / 13))
+        if num > 1: num = 1
+        elif num < -1: num = -1
+        nombres.append(num)
     mostra_histograma(nombres, None)
     normal_R1: list[float] = []
     normal_R2: list[float] = []
