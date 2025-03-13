@@ -30,7 +30,6 @@ def main() -> None:
     normal_R3: list[float] = []
 
     for num in nombres: 
-        print(num)
         for regla in ["R1", "R2", "R3"]: # Per cada nombre, el modificarem per les 3 regles.
             num_actual = num
             for i in range(15):
