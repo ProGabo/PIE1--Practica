@@ -1,6 +1,5 @@
 from random import uniform, normalvariate, randint
 import matplotlib.pyplot as plt
-import numpy as np
 from math import sqrt
 
 
@@ -31,85 +30,66 @@ def abandona(prob: float) -> bool:
         return True
     return False
 
-def barres_dicc(data: dict[int, int]) -> None:
-    '''Dibuixa línea de barres d'un diccionari'''    
-    filtered_data = {k: v for k, v in data.items() if k <= 100}
+def barres_dicc(data: dict[int, int], regla: str, distribucio: str) -> None:
+    '''Dibuixa línea de barres d'un diccionari que emmagetzama els continguts fins a abandonar.
+    Al gràfic dibuixat s'especifica la regla utilitzada'''
+        
+    dades_filtrades = {k: v for k, v in data.items() if k <= 100} # No més de 100 consumicions (molt escàs).
+    diccionari_ordenat = sorted(dades_filtrades.items())
+    keys, values = zip(*diccionari_ordenat)
 
-    # Ordenar por clave
-    sorted_items = sorted(filtered_data.items())
-    keys, values = zip(*sorted_items)
-
-    # Graficar
     plt.figure(figsize=(12, 5))
     plt.bar(keys, values, color='skyblue')
 
-    # Etiquetas
-    plt.xlabel("Clave")
-    plt.ylabel("Valor")
-    plt.title("Gráfico de barras (claves ≤ 100)")
+    plt.xlabel(f"Continguts consumits fins abandonar")
+    plt.ylabel("Freqüència")
+    plt.title(f"Continguts consumits a la {distribucio} fins a abandonar segons {regla}.")
 
-    # Mostrar
     plt.show()
 
 
 def main() -> None:
     '''Executa el programa PRINCIPAL.'''
-    nombres: list[float] = []
+    opinions_normal: list[float] = []
     for i in range(10000):
-        num = normalvariate(0, sqrt(1 / 13))
-        if num > 1: num = 1
-        elif num < -1: num = -1
-        nombres.append(num)
-    mostra_histograma(nombres, None)
+        posicio = normalvariate(0, sqrt(1 / 13))
+        if posicio > 1: posicio = 1
+        elif posicio < -1: posicio = -1
+        opinions_normal.append(posicio)
     
-    abandonats_R1: dict[int, int] = {}
-    abandonats_R2: dict[int, int] = {}
-    abandonats_R3: dict[int, int] = {}
-    for num in nombres: 
+    abandonats_unif_R1: dict[int, int] = {} # Clau: nombre d'exposicions fins a sortir, valor: freqüència de cops que passa la clau.
+    abandonats_unif_R2: dict[int, int] = {}
+    abandonats_unif_R3: dict[int, int] = {}
+    for posicio in opinions_normal: 
         for regla in ["R1", "R2", "R3"]: # Per cada nombre, el modificarem per les 3 regles.
-            num_actual = num
+            posicio_actual = posicio
             ha_abandonat = False
-            exposicions = -1 # Abandona un cop l'exposes, comença a la 1a exposició.
+            exposicions = 0 # Comptador de les exposicions fins a abandonar. Comença sense cap exposició
             while not ha_abandonat:
-                # L'únic que canvia amb cada regla és la probabilitat de mostrar contingut d'esq-dreta.
-                if regla == "R1": p_esq = (1 - num_actual) ** 2 / ((1 + num_actual) ** 2 + (1 - num_actual) ** 2) # Regla de REFORÇAMENT
-                elif regla == "R2": p_esq = (1 - num_actual) / 2 # Regla JUSTA
-                else: p_esq = (1 + num_actual) / 2 # Regla OPOSADA
-                assert 0 <= p_esq <= 1, "Probabilitat NO normalitzada entre [0, 1]"
+                if regla == "R1": p_esq = (1 - posicio_actual) ** 2 / ((1 + posicio_actual) ** 2 + (1 - posicio_actual) ** 2) # R1: REFORÇ
+                elif regla == "R2": p_esq = (1 - posicio_actual) / 2 # R2: JUSTA
+                else: p_esq = (1 + posicio_actual) / 2 # R3: OPOSADA
                 
                 if exposa_esquerra(p_esq): 
-                    if num_actual < 0: # Està alineat
-                        p_aband = 0.05
-                        if abandona(p_aband): ha_abandonat = True
-                    else: # No està alineat
-                        p_aband = 0.25
-                        if abandona(p_aband): ha_abandonat = True
-                    num_actual = num_actual - (1 + num_actual) / 4 # Després canviem la seva posició
-                else: # Exposa la dreta
-                    if num_actual > 0: # Està alineat
-                        p_aband = 0.05
-                        if abandona(p_aband): ha_abandonat = True
-                    else: # No està alineat
-                        p_aband = 0.25
-                        if abandona(p_aband): ha_abandonat = True
-                    num_actual = num_actual + (1 - num_actual) / 4 
+                    if posicio_actual < 0 and abandona(0.05): ha_abandonat = True # Està alineat amb esquerra. P_abandonar = 0.5
+                    elif posicio_actual > 0 and abandona(0.25): ha_abandonat = True # No està alineat. P_abandonar = 0.25
+                    posicio_actual = posicio_actual - (1 + posicio_actual) / 4 # Canvi a esquerra
+                else: 
+                    if posicio_actual < 0 and abandona(0.05): ha_abandonat = True # Alineat
+                    elif posicio_actual > 0 and abandona(0.25): ha_abandonat = True # No alineat
+                    posicio_actual = posicio_actual + (1 - posicio_actual) / 4 # Canvi a dreta
                 exposicions += 1
-            if regla == "R1":
-                if exposicions in abandonats_R1:
-                    abandonats_R1[exposicions] += 1
-                else: abandonats_R1[exposicions] = 1
-            
-            elif regla == "R2":
-                if exposicions in abandonats_R2:
-                    abandonats_R2[exposicions] += 1
-                else: abandonats_R2[exposicions] = 1
-            else:
-                if exposicions in abandonats_R3:
-                    abandonats_R3[exposicions] += 1
-                else: abandonats_R3[exposicions] = 1
-    barres_dicc(abandonats_R1)
-    barres_dicc(abandonats_R2)
-    barres_dicc(abandonats_R3)
+
+            if regla == "R1" and exposicions in abandonats_unif_R1: abandonats_unif_R1[exposicions] += 1
+            elif regla == "R1": abandonats_unif_R1[exposicions] = 1
+            elif regla == "R2" and exposicions in abandonats_unif_R2: abandonats_unif_R2[exposicions] += 1
+            elif regla == "R2": abandonats_unif_R2[exposicions] = 1
+            elif regla == "R3" and exposicions in abandonats_unif_R3: abandonats_unif_R3[exposicions] += 1
+            else: abandonats_unif_R3[exposicions] = 1
+
+    barres_dicc(abandonats_unif_R1)
+    barres_dicc(abandonats_unif_R2)
+    barres_dicc(abandonats_unif_R3)
 if __name__ == "__main__":
     main()
 
