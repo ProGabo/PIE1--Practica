@@ -10,9 +10,8 @@ def exposa_esquerra(prob: float) -> bool:
     if num_aleatori < prob: # Si la probabilitat (límit superior de [0, 1]) conté el nombre aleatori entre 0 i 1, l'exposa a l'esquerra
         return True
     return False
-    ### NO CONTEMPLEM EL CAS QUE SIGUI IGUAL (NO EXISTEIX TEÒRICAMENT)
 
-def mostra_histograma(dades: list[float], regla: str|None) -> None:
+def mostra_histograma(dades: list[float], regla: str, distribucio: str) -> None:
     '''Mostra histograma d'un conjunt de dades que indica la quantitat de posicions polítiques entre esquerra-dreta. 
     Si s'ha utilitzat una regla d'exposició, la mostrem per pantalla.'''
 
@@ -21,17 +20,13 @@ def mostra_histograma(dades: list[float], regla: str|None) -> None:
     
     plt.xlabel("Posicionament polític esquerra-dreta")
     plt.ylabel("Freqüència")
-    if regla: plt.title(f"Histograma de la uniforme després d'utilitzar {regla}.") 
-    else: plt.title("Histograma de la uniforme inicial.")
+    plt.title(f"Histograma de la {distribucio} després d'utilitzar {regla}.") 
 
     plt.show()
 
 def main() -> None:
     '''Executa el programa PRINCIPAL.'''
-    opinions_unif: list[float]
     opinions_unif = [uniform(-1, 1) for _ in range(10000)] # Genera 10000 opinions_unif aleatòries entre -1 i 1.
-    mostra_histograma(opinions_unif, None)
-
     uniform_R1: list[float] = []
     uniform_R2: list[float] = []
     uniform_R3: list[float] = []
@@ -53,9 +48,9 @@ def main() -> None:
             elif regla == "R2": uniform_R2.append(posicio_actual)
             else: uniform_R3.append(posicio_actual)
 
-    mostra_histograma(uniform_R1, "R1")
-    mostra_histograma(uniform_R2, "R2")
-    mostra_histograma(uniform_R3, "R3")
+    mostra_histograma(uniform_R1, "R1", "uniforme")
+    mostra_histograma(uniform_R2, "R2", "uniforme")
+    mostra_histograma(uniform_R3, "R3", "uniforme")
     
 if __name__ == "__main__":
     main()
