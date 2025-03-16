@@ -1,4 +1,4 @@
-from random import uniform, randint, normalvariate
+from random import uniform, normalvariate
 from math import sqrt
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -13,7 +13,6 @@ def exposa_esquerra(prob: float) -> bool:
         return True
     return False
 
-
 def mostra_histograma(dades: list[float], regla: str, distribucio: str) -> None:
     '''Mostra histograma d'un conjunt de dades que indica la quantitat de posicions polítiques entre esquerra-dreta. 
     Si s'ha utilitzat una regla d'exposició, la mostrem per pantalla.'''
@@ -23,7 +22,7 @@ def mostra_histograma(dades: list[float], regla: str, distribucio: str) -> None:
     
     plt.xlabel("Posicionament polític esquerra-dreta")
     plt.ylabel("Freqüència")
-    plt.title(f"Histograma de la normal després d'utilitzar {regla}.") 
+    plt.title(f"Histograma de la {distribucio} després d'utilitzar {regla}.") 
 
     plt.show()
 
@@ -36,8 +35,6 @@ def main() -> None:
         if posicio > 1: posicio = 1
         elif posicio < -1: posicio = -1
         opinions_normal.append(posicio)
-
-
     
     normal_R1: list[float] = []
     normal_R2: list[float] = []

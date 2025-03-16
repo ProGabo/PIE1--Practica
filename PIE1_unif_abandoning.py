@@ -1,92 +1,67 @@
-from random import uniform, randint
+from random import uniform
 import matplotlib.pyplot as plt
-import numpy as np
-
 
 def exposa_esquerra(prob: float) -> bool:
     '''Retorna la decisió aleatòria de si exposa contingut de l'esquerra donada la seva probabilitat, sinó exposa contingut de la dreta. Prec: 0 <= prob <= 1.'''
-    num_aleatori = uniform(0, 1)
-    if num_aleatori < prob: # Si la probabilitat (límit superior de [0, 1]) conté el nombre aleatori entre 0 i 1, l'exposa a l'esquerra
+    posicio_aleatori = uniform(0, 1)
+    if posicio_aleatori < prob: # Si la probabilitat (límit superior de [0, 1]) conté el nombre aleatori entre 0 i 1, l'exposa a l'esquerra
         return True
     return False
-    ### NO CONTEMPLEM EL CAS QUE SIGUI IGUAL (NO EXISTEIX TEÒRICAMENT)
-
-def mostra_histograma(dades: list[float], regla: str|None) -> None:
-    '''Mostra histograma d'un conjunt de dades que indica la quantitat de posicions polítiques entre esquerra-dreta. Si s'ha utilitzat una regla d'exposició, la mostrem per pantalla.'''
-    plt.hist(dades, bins=10, color="royalblue", edgecolor="black")
-    
-    plt.xlabel("Posicionament polític esquerra-dreta")
-    plt.ylabel("Freqüència")
-    plt.title(f"Histograma de la uniforme després d'utilitzar {regla}.") if regla else plt.title("Histograma de la uniforme inicial.")
-
-    plt.show()
 
 def abandona(prob: float) -> bool:
     '''Decideix si abandona o no un usuari depenent de la prob. d'abandonar.'''
     assert 0 <= prob <= 1
-    num_aleatori = uniform(0, 1)
-    if num_aleatori < prob: # Si la probabilitat (límit superior de [0, 1]) conté el nombre aleatori entre 0 i 1, l'exposa a l'esquerra
+    posicio_aleatori = uniform(0, 1)
+    if posicio_aleatori < prob: # Si la probabilitat (límit superior de [0, 1]) conté el nombre aleatori entre 0 i 1, l'exposa a l'esquerra
         return True
     return False
 
-def barres_dicc(data: dict[int, int]) -> None:
-    '''Dibuixa línea de barres d'un diccionari'''    
-    filtered_data = {k: v for k, v in data.items() if k <= 100}
+def barres_dicc(data: dict[int, int], regla: str, distribucio: str) -> None:
+    '''Dibuixa línea de barres d'un diccionari que emmagetzama els continguts fins a abandonar.
+    Al gràfic dibuixat s'especifica la regla utilitzada'''
+        
+    dades_filtrades = {k: v for k, v in data.items() if k <= 80} # No més de 80 consumicions (molt escàs).
+    diccionari_ordenat = sorted(dades_filtrades.items())
+    claus, valors = zip(*diccionari_ordenat)
 
-    # Ordenar por clave
-    sorted_items = sorted(filtered_data.items())
-    keys, values = zip(*sorted_items)
-
-    # Graficar
     plt.figure(figsize=(12, 5))
-    plt.bar(keys, values, color='skyblue')
+    plt.bar(claus, valors, color='skyblue')
 
-    # Etiquetas
-    plt.xlabel("Clave")
-    plt.ylabel("Valor")
-    plt.title("Gráfico de barras (claves ≤ 100)")
+    plt.xlabel(f"Cops que ha consumit l'usuari fins a abandonar")
+    plt.ylabel("Freqüència")
+    plt.title(f"Continguts consumits a la {distribucio} fins a abandonar segons {regla}.")
 
-    # Mostrar
     plt.show()
-
 
 def main() -> None:
     '''Executa el programa PRINCIPAL.'''
-    nombres: list[float] = [uniform(-1, 1) for _ in range(10000)] # Genera 10000 nombres aleatòries entre 0 i 1.
-    mostra_histograma(nombres, None)
-    
+    opinions_unif: list[float] = [uniform(-1, 1) for _ in range(10000)] # Genera 10000 opinions_unif aleatòries entre 0 i 1.   
     abandonats_R1: dict[int, int] = {}
     abandonats_R2: dict[int, int] = {}
     abandonats_R3: dict[int, int] = {}
-    for num in nombres: 
+    
+    for posicio in opinions_unif: 
         for regla in ["R1", "R2", "R3"]: # Per cada nombre, el modificarem per les 3 regles.
-            num_actual = num
+            posicio_actual = posicio
             ha_abandonat = False
-            exposicions = -1 # Abandona un cop l'exposes, comença a la 1a exposició.
+            exposicions = 0 # Abandona un cop l'exposes, comença a la 1a exposició.
             while not ha_abandonat:
                 # L'únic que canvia amb cada regla és la probabilitat de mostrar contingut d'esq-dreta.
-                if regla == "R1": p_esq = (1 - num_actual) ** 2 / ((1 + num_actual) ** 2 + (1 - num_actual) ** 2) # Regla de REFORÇAMENT
-                elif regla == "R2": p_esq = (1 - num_actual) / 2 # Regla JUSTA
-                else: p_esq = (1 + num_actual) / 2 # Regla OPOSADA
+                if regla == "R1": p_esq = (1 - posicio_actual) ** 2 / ((1 + posicio_actual) ** 2 + (1 - posicio_actual) ** 2) # Regla de REFORÇAMENT
+                elif regla == "R2": p_esq = (1 - posicio_actual) / 2 # Regla JUSTA
+                else: p_esq = (1 + posicio_actual) / 2 # Regla OPOSADA
                 assert 0 <= p_esq <= 1, "Probabilitat NO normalitzada entre [0, 1]"
                 
                 if exposa_esquerra(p_esq): 
-                    if num_actual < 0: # Està alineat
-                        p_aband = 0.05
-                        if abandona(p_aband): ha_abandonat = True
-                    else: # No està alineat
-                        p_aband = 0.25
-                        if abandona(p_aband): ha_abandonat = True
-                    num_actual = num_actual - (1 + num_actual) / 4 # Després canviem la seva posició
-                else: # Exposa la dreta
-                    if num_actual > 0: # Està alineat
-                        p_aband = 0.05
-                        if abandona(p_aband): ha_abandonat = True
-                    else: # No està alineat
-                        p_aband = 0.25
-                        if abandona(p_aband): ha_abandonat = True
-                    num_actual = num_actual + (1 - num_actual) / 4 
+                    if posicio_actual < 0 and abandona(0.05): ha_abandonat = True # Està alineat amb esquerra. P_abandonar = 0.5
+                    elif posicio_actual > 0 and abandona(0.25): ha_abandonat = True # No està alineat. P_abandonar = 0.25
+                    posicio_actual = posicio_actual - (1 + posicio_actual) / 4 # Canvi a esquerra
+                else: 
+                    if posicio_actual < 0 and abandona(0.25): ha_abandonat = True # No alineat
+                    elif posicio_actual > 0 and abandona(0.05): ha_abandonat = True # Alineat
+                    posicio_actual = posicio_actual + (1 - posicio_actual) / 4 # Canvi a dreta
                 exposicions += 1
+        
             if regla == "R1":
                 if exposicions in abandonats_R1:
                     abandonats_R1[exposicions] += 1
@@ -100,9 +75,9 @@ def main() -> None:
                 if exposicions in abandonats_R3:
                     abandonats_R3[exposicions] += 1
                 else: abandonats_R3[exposicions] = 1
-    barres_dicc(abandonats_R1)
-    barres_dicc(abandonats_R2)
-    barres_dicc(abandonats_R3)
+    barres_dicc(abandonats_R1, "R1", "uniforme")
+    barres_dicc(abandonats_R2, "R2", "uniforme")
+    barres_dicc(abandonats_R3, "R3", "uniforme")
 if __name__ == "__main__":
     main()
 

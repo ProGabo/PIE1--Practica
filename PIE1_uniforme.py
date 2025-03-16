@@ -31,8 +31,6 @@ def main() -> None:
     opinions_unif: list[float]
     opinions_unif = [uniform(-1, 1) for _ in range(10000)] # Genera 10000 opinions_unif aleatòries entre -1 i 1.
     mostra_histograma(opinions_unif, None)
-    p_esq: float
-    posicio: float
 
     uniform_R1: list[float] = []
     uniform_R2: list[float] = []
